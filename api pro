@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="scripit.js"></script>
+</head>
+<body>
+    <form onsubmit="saveToLocalStorage(event)">
+        <label>ExpenseAmount</label>
+        <input id="ExpenseAmount" type="tel" name="ExpenseAmount">
+        <label>Choose Descripition</label>
+        <input id="Descripition" type="text" name="Descripition">
+        <label>Category</label>
+        
+        <input id="Category" type="text" name="Category">
+        <button>ADD Expense</button>
+    </form>
+    <ul id="list"></ul>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.1.3/axios.min.js"></script>
+</body>
+</html>
+
+
+
+
+
+
+                            JAVA SCripit 
+
+
+
+function saveToLocalStorage(event){
+    event.preventDefault();
+    const amount = event.target.ExpenseAmount.value;
+    const decp = event.target.Descripition.value;
+    const catge = event.target.Category.value;
+    // localStorage.setItem('amount',amount);
+    // localStorage.setItem('decp ',decp);
+    // localStorage.setItem('catge',catge);
+    const obj = {
+        amount,
+        decp,
+        catge
+        
+    }
+
+     axios.post("https://crudcrud.com/api/6ec5b9fdc5484a10b2c8e1835c2bb5f9/expData",obj)
+     .then((response)=>{
+        showNewExpOnScreen(response.data)
+     })
+     .catch((err)=>{
+        document.body.innerHTML = document.body.innerHTML + "<h4>Somthing went wrong </h4>"
+        console.log(err)
+     })
+    // localStorage.setItem(obj.decp,JSON.stringify(obj))
+    // showNewExpOnScreen(obj);
+}
+
+window.addEventListener("DOMContentLoaded",()=>{
+    axios.get("https://crudcrud.com/api/6ec5b9fdc5484a10b2c8e1835c2bb5f9/expData")
+    .then((response)=>{
+        console.log(response)
+        for(var i=0; i<response.data.length; i++){
+            showNewExpOnScreen(response.data[i]);
+        }
+    })
+    .catch((err)=>{
+        console.log(err);
+    })
+})
+
+function showNewExpOnScreen(EXPEN){
+    const parentNode = document.getElementById('list');
+    const childHTML = `<li id=${EXPEN._id}> ${EXPEN.amount} - ${EXPEN.decp} - ${EXPEN.catge} 
+                        <button onclick=deletExpen('${EXPEN._id}')>Delete</button> 
+                        <button onclick=editFun('${EXPEN.decp}','${EXPEN.amount}','${EXPEN.catge}','${EXPEN._id}')>Edit</button>
+                        </li>`;
+    parentNode.innerHTML = parentNode.innerHTML +  childHTML;
+}
+//delete from local storage
+function deletExpen(EXPENId){
+    axios.delete(`https://crudcrud.com/api/6ec5b9fdc5484a10b2c8e1835c2bb5f9/expData/${EXPENId}`)
+    .then((response)=>{
+        removeFromScreen(EXPENId)
+    })
+   .catch((err)=>{
+    console.log(err);
+   })
+
+}
+//delete from screen
+function removeFromScreen(EXPENId){
+    const parentNode = document.getElementById('list');
+    const childNodedel = document.getElementById(EXPENId);
+    parentNode.removeChild(childNodedel);
+}
+
+//edit expen
+
+function editFun(decp,amount,catge,EXPENId){
+    document.getElementById('Descripition').value = decp;
+    document.getElementById('ExpenseAmount').value = amount;
+    document.getElementById('Category').value = catge;
+
+    deletExpen(EXPENId);
+}
